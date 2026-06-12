@@ -1,0 +1,16 @@
+{
+  "data_conversion": {
+    "wavelength_scale": 1.0,
+    "intensity_scale": 1.0,
+    "baseline_correction": false
+  },
+  "export": {
+    "png_dpi": 300,
+    "h5_compression": "gzip"
+  },
+  "gui": {
+    "theme": "light",
+    "window_width": 1200,
+    "window_height": 800
+  }
+}
