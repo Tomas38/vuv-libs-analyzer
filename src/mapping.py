@@ -35,7 +35,7 @@ with col2:
     if uploaded_file_background is not None:
         ydatas_background = ham_read_file(uploaded_file_background)
     else:
-        ydatas_background = ham_reader("sample-data/10us_30meas_05_Al_alloy_30mJ_Ar_1020mbar.csv")
+        ydatas_background = np.zeros_like(ydatas)
 
 if ydatas.size == 0:
     st.info("Upload a Hamamatsu file to display spectra.")
