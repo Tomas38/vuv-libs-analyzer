@@ -41,48 +41,27 @@ if ydatas.size == 0:
     st.info("Upload a Hamamatsu file to display spectra.")
     st.stop()
 
+use_background_subtraction = st.toggle("Subtract background")
+show_dark_mean = st.toggle("Show dark mean spectrum")
+
+ydatas_background_avg = np.mean(ydatas_background, axis=0)
+
+if use_background_subtraction is True:
+    ydatas = ydatas - ydatas_background_avg
+
 xdata2 = np.arange(ydatas.shape[1])
 spectra_df = pd.DataFrame(ydatas.T, columns=[f"spectrum_{i}" for i in range(ydatas.shape[0])])
 spectra_df.insert(0, "x", xdata2)
 
-# Initial spectrum to display
-spec_id1 = 0
-
-fig = go.Figure()
-slider_steps = []
-for index in range(ydatas.shape[0]):
-    selected = index == spec_id1
-    # selected is True/False
-    fig.add_trace(
-        go.Scatter(
-            x=spectra_df["x"],
-            y=spectra_df[f"spectrum_{index}"],
-            mode="lines",
-            name=f"spectrum_{index}",
-            line={"width": 1},
-            visible=selected,
-        )
+if show_dark_mean:
+    fig0 = go.Figure()
+    fig0.add_trace(
+        go.Scatter(x=spectra_df["x"], y=ydatas_background_avg, mode="lines", name="background average", line={"width": 1})
     )
+    st.plotly_chart(fig0)
 
-# Create steps for the slider
-for index in range(ydatas.shape[0]):
-    visibility = [trace_index == index for trace_index in range(ydatas.shape[0])]
-    # looks like [True, False, False, ...] for the selected trace and [False, True, False, ...] for the next one etc.
-    slider_steps.append(
-        {
-            "method": "update",
-            "args": [{"visible": visibility}, {"title": f"Spectrum {index}"}],
-            "label": str(index),
-        }
-    )
+show_spectra = st.toggle("Show spectra")
 
-# Create and add slider inside the plotly figure
-sliders = [dict(
-    active=spec_id1,
-    currentvalue={"prefix": "Spectrum: "},
-    pad={"t": 30},
-    steps=slider_steps
-)]
 
 rect_x_max = int(spectra_df["x"].max())
 rect_width_default = 100
@@ -107,23 +86,61 @@ with rect_col2:
         step=1,
     )
 
-fig.add_vrect(
-    x0=rect_x0,
-    x1=rect_x1,
-    annotation_text="integration",
-    annotation_position="top left",
-    fillcolor="green",
-    opacity=0.25,
-    line_width=0,
-)
+# Initial spectrum to display
+spec_id1 = 0
 
-fig.update_layout(title="Title", xaxis_title="pixel no.", yaxis_title="intensity (counts)", uirevision="keep")
-fig.update_layout(sliders=sliders)
-st.plotly_chart(fig)
+if show_spectra:
+    fig = go.Figure()
+    slider_steps = []
+    for index in range(ydatas.shape[0]):
+        selected = index == spec_id1
+        # selected is True/False
+        fig.add_trace(
+            go.Scatter(
+                x=spectra_df["x"],
+                y=spectra_df[f"spectrum_{index}"],
+                mode="lines",
+                name=f"spectrum_{index}",
+                line={"width": 1},
+                visible=selected,
+            )
+        )
+
+    # Create steps for the slider
+    for index in range(ydatas.shape[0]):
+        visibility = [trace_index == index for trace_index in range(ydatas.shape[0])]
+        # looks like [True, False, False, ...] for the selected trace and [False, True, False, ...] for the next one etc.
+        slider_steps.append(
+            {
+                "method": "update",
+                "args": [{"visible": visibility}, {"title": f"Spectrum {index}"}],
+                "label": str(index),
+            }
+        )
+
+    # Create and add slider inside the plotly figure
+    sliders = [dict(
+        active=spec_id1,
+        currentvalue={"prefix": "Spectrum: "},
+        pad={"t": 30},
+        steps=slider_steps
+    )]
+
+    fig.add_vrect(
+        x0=rect_x0,
+        x1=rect_x1,
+        annotation_text="integration",
+        annotation_position="top left",
+        fillcolor="green",
+        opacity=0.25,
+        line_width=0,
+    )
+
+    fig.update_layout(title="Title", xaxis_title="pixel no.", yaxis_title="intensity (counts)", uirevision="keep")
+    fig.update_layout(sliders=sliders)
+    st.plotly_chart(fig)
 
 x_in_wavelength = st.toggle("Show x-axis in wavelength", value=True)
-
-use_background_subtraction = st.toggle("Subtract background")
 
 show_data_table = st.toggle("Show data table")
 if show_data_table:
