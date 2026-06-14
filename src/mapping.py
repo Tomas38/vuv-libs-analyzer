@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 import streamlit as st
 from vuv_analyzer.core.ham_reader import ham_read_file, ham_reader
 
@@ -83,6 +84,39 @@ sliders = [dict(
     steps=slider_steps
 )]
 
+rect_x_max = int(spectra_df["x"].max())
+rect_width_default = 100
+rect_x0_default = min(1780, max(0, rect_x_max - rect_width_default))
+rect_x1_default = min(rect_x0_default + rect_width_default, rect_x_max)
+
+rect_col1, rect_col2, rect_col3, rect_col4 = st.columns(4)
+with rect_col1:
+    rect_x0 = st.number_input(
+        "x0",
+        min_value=0,
+        max_value=rect_x_max - 1,
+        value=rect_x0_default,
+        step=1,
+    )
+with rect_col2:
+    rect_x1 = st.number_input(
+        "x1",
+        min_value=rect_x0 + 1,
+        max_value=rect_x_max,
+        value=max(rect_x1_default, rect_x0 + 1),
+        step=1,
+    )
+
+fig.add_vrect(
+    x0=rect_x0,
+    x1=rect_x1,
+    annotation_text="integration",
+    annotation_position="top left",
+    fillcolor="green",
+    opacity=0.25,
+    line_width=0,
+)
+
 fig.update_layout(title="Title", xaxis_title="pixel no.", yaxis_title="intensity (counts)", uirevision="keep")
 fig.update_layout(sliders=sliders)
 st.plotly_chart(fig)
@@ -94,3 +128,42 @@ use_background_subtraction = st.toggle("Subtract background")
 show_data_table = st.toggle("Show data table")
 if show_data_table:
     st.write(spectra_df)
+
+#st.write(len(ydatas[0, :]))
+#st.write(len(ydatas[:, 0]))
+#st.write(np.shape(ydatas))
+
+libs_map = np.zeros((grid_x, grid_y), dtype=float)
+spectra_ids = np.zeros((grid_x, grid_y), dtype=int)
+
+libs_map[4, 2] = 5.0
+
+snake = st.toggle("Snake-like mapping", value=False)
+
+try:
+    for i in range(grid_x):
+        for j in range(grid_y):
+            if snake == False:
+                index0 = i * shots + j * shots * grid_x
+                spectra_ids[i, j] = index0
+            if snake == True:
+                index0 = 0
+                if j % 2 == 0:
+                    index0 = i * shots + j * shots * grid_x
+                else:
+                    index0 = (grid_x - i - 1) * shots + j * shots * grid_x
+                spectra_ids[i, j] = index0
+            indexes = np.arange(spectra_ids[i, j], shots)
+            integ_vals = []
+            for k in range(shots):
+                integ_vals.append(np.sum(ydatas[spectra_ids[i, j] + k, rect_x0:rect_x1]))
+            int_vals = np.array(integ_vals)
+            libs_map[i, j] = np.sum(int_vals)
+except Exception as e:
+    st.error(f"Error processing spectra: {e}")
+
+#st.write(libs_map)
+
+fig2 = px.imshow(libs_map.T, color_continuous_scale="viridis")
+st.plotly_chart(fig2)
+
