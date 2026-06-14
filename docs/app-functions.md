@@ -33,13 +33,16 @@ Export the data withing compatible data format suitable for further data analysi
 - the software will detect peak position
 - asign tabeled wavelength to the detected peak
 - add this datapoint to calibration config (multiple configs should be possible)
-- calibration/recalculation then as curve fit of quadratic function
+- calibration/recalculation then as
+  - cubic splines using 10-12 datapoints (James, 2007)
+  - linear function fit
+  - quadratic polynomial curve fit
 - config as file
 - calibration might involve using peaks from multiple spectra
 
 ### LIBS map viewer
 
-- select interval with peak (mouse cling-and-drag in graph)
+- select interval with peak (mouse click-and-drag in graph)
 - plot signal from detected interval in graph
 - aditional entry needed (data from SpectraController):
   - spacing size

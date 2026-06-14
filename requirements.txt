@@ -1,6 +1,7 @@
 numpy
 scipy
 pandas
+plotly
 matplotlib
 h5py
 streamlit
