@@ -14,3 +14,6 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[project.scripts]
+vuv_analyzer = "vuv_analyzer.launch:main"
