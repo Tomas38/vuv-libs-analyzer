@@ -86,15 +86,6 @@ fig2 = go.Figure()
 fig2.add_trace(
     go.Scatter(
         x=spectra_df[xaxis_to_show],
-        y=ydatas_avg,
-        mode="lines",
-        line={"width": 2},
-        visible=True,
-    )
-)
-fig2.add_trace(
-    go.Scatter(
-        x=spectra_df[xaxis_to_show],
         y=ydatas_avg + ydatas_std,
         mode="lines",
         name="Average Dark Frame + 1 std",
@@ -111,8 +102,18 @@ fig2.add_trace(
         name="Average Dark Frame - 1 std",
         line={"width": 0},
         visible=True,
-        fill='tonexty',
+        fill="tonexty",
+        fillcolor="lightgray",
         showlegend=False,
+    )
+)
+fig2.add_trace(
+    go.Scatter(
+        x=spectra_df[xaxis_to_show],
+        y=ydatas_avg,
+        mode="lines",
+        line={"color": "black", "width": 2},
+        visible=True,
     )
 )
 
