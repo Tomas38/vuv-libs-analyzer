@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: vuv-analyzer
+Version: 0.3.0
+Summary: VUV analyzer package
+Author: Your Name
+Requires-Python: >=3.8
+Dynamic: author
+Dynamic: requires-python

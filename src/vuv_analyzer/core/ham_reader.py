@@ -10,7 +10,7 @@ def _read_hamamatsu_stream(
     marker: str = "[MEAS_DATA]",
     skip_lines_after_marker: int = 1,
     skip_first_n_cols: int = 6,
-) -> np.ndarray:
+):
     for _, line in enumerate(csv_file):
         if line.strip() == marker:
             break
@@ -22,39 +22,34 @@ def _read_hamamatsu_stream(
 
     csv_reader = csv.reader(csv_file, delimiter=",")
     data_rows = []
+    pixel_ids = []
+
     for row in csv_reader:
         if not any((field or "").strip() for field in row):
             break
 
+        pixel_ids.append(int(float(row[0].strip())))
+
         tail = row[skip_first_n_cols:]
-        if not tail:
-            data_rows.append([])
-            continue
 
         converted = []
-        for value in tail:
-            stripped = value.strip()
-            if stripped == "":
-                converted.append(np.nan)
-                continue
-            try:
-                converted.append(float(stripped))
-            except ValueError:
-                converted.append(np.nan)
+        for v in tail:
+            v = v.strip()
+            if v == "":
+                converted.append(-1)   # or raise error
+            else:
+                converted.append(int(v))
+
         data_rows.append(converted)
 
-    if not data_rows:
-        return np.empty((0, 0), dtype=float)
+    max_cols = max(len(r) for r in data_rows)
 
-    max_cols = max(len(row) for row in data_rows)
-    if max_cols == 0:
-        return np.empty((len(data_rows), 0), dtype=float)
+    array = np.zeros((len(data_rows), max_cols), dtype=np.int64)
 
-    array = np.full((len(data_rows), max_cols), np.nan, dtype=float)
-    for row_index, row in enumerate(data_rows):
-        array[row_index, : len(row)] = row
+    for i, row in enumerate(data_rows):
+        array[i, :len(row)] = np.array(row, dtype=np.int64)
 
-    return array.transpose()
+    return np.array(pixel_ids, dtype=np.int64), array.transpose()
 
 
 def ham_read_file(
@@ -62,7 +57,7 @@ def ham_read_file(
     marker: str = "[MEAS_DATA]",
     skip_lines_after_marker: int = 1,
     skip_first_n_cols: int = 6,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     """Read Hamamatsu-style data from a file path or file-like object."""
 
     if isinstance(file_obj, (str, bytes, PathLike)):
@@ -96,7 +91,7 @@ def ham_reader(
     marker: str = "[MEAS_DATA]",
     skip_lines_after_marker: int = 1,
     skip_first_n_cols: int = 6,
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     """Read a Hamamatsu-style CSV-like file and return measurement data."""
 
     return ham_read_file(

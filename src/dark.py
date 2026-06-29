@@ -8,7 +8,7 @@ from vuv_analyzer.core.pix2wav import pix2wav
 
 st.set_page_config(layout="wide")
 
-uploaded_file = st.file_uploader("Choose a file with spectra to display")
+uploaded_file = st.file_uploader("Choose a file with dark frames")
 if uploaded_file is not None:
     xdata, ydatas = ham_read_file(uploaded_file)
 else:
@@ -19,18 +19,14 @@ if ydatas.size == 0:
     st.stop()
 
 wav_on = st.toggle("X-axis in wavelength", value=True)
-use_background_subtraction = st.toggle("Subtract background")
-
-
-dark_id, dark_y, dark_y_std = np.loadtxt("src/config/dark_frame_default.csv", delimiter=",", skiprows=1, unpack=True)
 
 xdata2 = xdata
-if use_background_subtraction is True:
-    ydatas = ydatas - dark_y
-
 spectra_df = pd.DataFrame(ydatas.T, columns=[f"spectrum_{i}" for i in range(ydatas.shape[0])])
 spectra_df.insert(0, "x", xdata2)
 spectra_df.insert(0, "wavelength", pix2wav(xdata2))
+
+ydatas_avg = np.mean(ydatas, axis=0)
+ydatas_std = np.std(ydatas, axis=0)
 
 
 if wav_on:
@@ -85,6 +81,63 @@ fig.update_layout(title="Loaded spectra", yaxis_title="intensity (counts)", uire
 fig.update_layout(sliders=sliders)
 st.plotly_chart(fig)
 
-show_data_table = st.toggle("Show data table")
-if show_data_table:
-    st.write(spectra_df)
+
+fig2 = go.Figure()
+fig2.add_trace(
+    go.Scatter(
+        x=spectra_df[xaxis_to_show],
+        y=ydatas_avg,
+        mode="lines",
+        line={"width": 2},
+        visible=True,
+    )
+)
+fig2.add_trace(
+    go.Scatter(
+        x=spectra_df[xaxis_to_show],
+        y=ydatas_avg + ydatas_std,
+        mode="lines",
+        name="Average Dark Frame + 1 std",
+        line={"width": 0},
+        visible=True,
+        showlegend=False,
+    )
+)
+fig2.add_trace(
+    go.Scatter(
+        x=spectra_df[xaxis_to_show],
+        y=ydatas_avg - ydatas_std,
+        mode="lines",
+        name="Average Dark Frame - 1 std",
+        line={"width": 0},
+        visible=True,
+        fill='tonexty',
+        showlegend=False,
+    )
+)
+
+if wav_on:
+    fig2.update_layout(xaxis_title="Wavelength (nm)")
+else:
+    fig2.update_layout(xaxis_title="Pixel No.")
+fig2.update_layout(title="Average Dark Frame ± 1 std", yaxis_title="intensity (counts)", uirevision="keep")
+
+st.plotly_chart(fig2)
+
+
+
+override_default_dark_buttion = st.button("Overwrite Master Dark Frame", type="primary")
+
+if override_default_dark_buttion:
+    # Combine the arrays column-wise
+    data = np.column_stack((xdata, ydatas_avg, ydatas_std))
+
+    # Save to CSV
+    np.savetxt(
+        "src/config/dark_frame_default.csv",
+        data,
+        delimiter=",",
+        header="x,y,std",
+        comments="",
+        fmt="%.10g"   # Adjust formatting as needed
+    )

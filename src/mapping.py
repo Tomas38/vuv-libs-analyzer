@@ -10,9 +10,9 @@ st.title("VUV LIBS Map Analyzer")
 col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
-    shots = st.number_input("Shots per spot", min_value=1, step=1)
+    shots = st.number_input("Shots per spot", min_value=1, step=1, value=3)
 with col2:
-    grid_x = st.number_input("Grid X (spots)", min_value=1, value=10, step=1)
+    grid_x = st.number_input("Grid X (spots)", min_value=1, value=13, step=1)
 with col3:
     grid_y = st.number_input("Grid Y (spots)", min_value=1, value=10, step=1)
 with col4:
@@ -27,15 +27,15 @@ col1, col2 = st.columns(2)
 with col1:
     uploaded_file = st.file_uploader("Choose a file with spectra to display")
     if uploaded_file is not None:
-        ydatas = ham_read_file(uploaded_file)
+        xdatas, ydatas = ham_read_file(uploaded_file)
     else:
-        ydatas = ham_reader("sample-data/10us_30meas_05_Al_alloy_30mJ_Ar_1020mbar.csv")
+        xdatas, ydatas = ham_reader("sample-data/10us_map_13x10_3shots_teeth.csv")
 with col2:
     uploaded_file_background = st.file_uploader("Choose a file for background subtraction")
     if uploaded_file_background is not None:
-        ydatas_background = ham_read_file(uploaded_file_background)
+        xdatas_background, ydatas_background = ham_read_file(uploaded_file_background)
     else:
-        ydatas_background = np.zeros_like(ydatas)
+        xdatas_background, ydatas_background = ham_reader("sample-data/10us_map_13x10_3shots_teeth.csv")
 
 if ydatas.size == 0:
     st.info("Upload a Hamamatsu file to display spectra.")
@@ -160,10 +160,10 @@ snake = st.toggle("Snake-like mapping", value=False)
 try:
     for i in range(grid_x):
         for j in range(grid_y):
-            if snake == False:
+            if snake is False:
                 index0 = i * shots + j * shots * grid_x
                 spectra_ids[i, j] = index0
-            if snake == True:
+            if snake is True:
                 index0 = 0
                 if j % 2 == 0:
                     index0 = i * shots + j * shots * grid_x
