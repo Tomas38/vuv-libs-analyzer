@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -6,13 +8,15 @@ from vuv_analyzer.core.ham_reader import ham_read_file, ham_reader
 from vuv_analyzer.core.pix2wav import pix2wav
 
 
+BASE_DIR = Path(__file__).resolve().parent
+
 st.set_page_config(layout="wide")
 
 uploaded_file = st.file_uploader("Choose a file with spectra to display")
 if uploaded_file is not None:
     xdata, ydatas = ham_read_file(uploaded_file)
 else:
-    xdata, ydatas = ham_reader("sample-data/10us_30meas_05_Al_alloy_30mJ_Ar_1020mbar.csv")
+    xdata, ydatas = ham_reader(BASE_DIR / "sample-data" / "10us_30meas_05_Al_alloy_30mJ_Ar_1020mbar.csv")
 
 if ydatas.size == 0:
     st.info("Upload a Hamamatsu file to display spectra.")
@@ -22,7 +26,7 @@ wav_on = st.toggle("X-axis in wavelength", value=True)
 use_background_subtraction = st.toggle("Subtract background")
 
 
-dark_id, dark_y, dark_y_std = np.loadtxt("src/config/dark_frame_default.csv", delimiter=",", skiprows=1, unpack=True)
+dark_id, dark_y, dark_y_std = np.loadtxt(BASE_DIR / "config" / "dark_frame_default.csv", delimiter=",", skiprows=1, unpack=True)
 
 xdata2 = xdata
 if use_background_subtraction is True:

@@ -1,4 +1,9 @@
+from pathlib import Path
+
 import numpy as np
+
+
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 
 def pix2wav(pixel_ids):
@@ -17,7 +22,7 @@ def pix2wav(pixel_ids):
     """
     # LOAD CALIBRATION CURVE DATA
     # Load the CSV file, skipping the header row
-    cal_data = np.loadtxt("src/config/calibration_curve_data.csv", delimiter=",", skiprows=1)
+    cal_data = np.loadtxt(BASE_DIR / "config" / "calibration_curve_data.csv", delimiter=",", skiprows=1)
 
     # Split into separate arrays
     # cal_xdata = cal_data[:, 0]

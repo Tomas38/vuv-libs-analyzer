@@ -1,9 +1,14 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import streamlit as st
 from vuv_analyzer.core.ham_reader import ham_read_file, ham_reader
+
+
+BASE_DIR = Path(__file__).resolve().parent
 
 st.title("VUV LIBS Map Analyzer")
 
@@ -29,13 +34,13 @@ with col1:
     if uploaded_file is not None:
         xdatas, ydatas = ham_read_file(uploaded_file)
     else:
-        xdatas, ydatas = ham_reader("sample-data/10us_map_13x10_3shots_teeth.csv")
+        xdatas, ydatas = ham_reader(BASE_DIR / "sample-data" / "10us_map_13x10_3shots_teeth.csv")
 with col2:
     uploaded_file_background = st.file_uploader("Choose a file for background subtraction")
     if uploaded_file_background is not None:
         xdatas_background, ydatas_background = ham_read_file(uploaded_file_background)
     else:
-        xdatas_background, ydatas_background = ham_reader("sample-data/10us_map_13x10_3shots_teeth.csv")
+        xdatas_background, ydatas_background = ham_reader(BASE_DIR / "sample-data" / "10us_map_13x10_3shots_teeth.csv")
 
 if ydatas.size == 0:
     st.info("Upload a Hamamatsu file to display spectra.")

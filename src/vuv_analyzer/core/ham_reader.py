@@ -87,7 +87,7 @@ def ham_read_file(
 
 
 def ham_reader(
-    filename: str,
+    filename: str | PathLike,
     marker: str = "[MEAS_DATA]",
     skip_lines_after_marker: int = 1,
     skip_first_n_cols: int = 6,

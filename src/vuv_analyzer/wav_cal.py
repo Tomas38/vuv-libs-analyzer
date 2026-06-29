@@ -1,14 +1,17 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-from vuv_analyzer.core.ham_reader import ham_read_file, ham_reader
 from scipy.optimize import curve_fit
 
 
+BASE_DIR = Path(__file__).resolve().parent
+
+
 def load_default():
-    st.session_state.df = pd.read_csv("src/config/calibration_points_default0.csv")
+    st.session_state.df = pd.read_csv(BASE_DIR / "config" / "calibration_points_default0.csv")
 
 def load_csv(uploaded_file):
     if uploaded_file is not None:
@@ -30,7 +33,7 @@ st.title("VUV LIBS Wavelength Calibration")
 
 if "df" not in st.session_state:
     st.session_state.df = pd.read_csv(
-        "src/config/calibration_points_default0.csv"
+        BASE_DIR / "config" / "calibration_points_default0.csv"
     )
 if "xdata" not in st.session_state:
     st.session_state.xdata = np.array([])
@@ -50,7 +53,7 @@ csv_data = edited_df.to_csv(index=False)
 
 override_default_buttion = st.button("Overwrite Default Points", type="primary")
 if override_default_buttion:
-    edited_df.to_csv("src/config/calibration_points_default0.csv", index=False)
+    edited_df.to_csv(BASE_DIR / "config" / "calibration_points_default0.csv", index=False)
 
 st.download_button(label="Export Points as CSV", data=csv_data, file_name="calibration_points.csv", mime="text/csv")
 
@@ -174,7 +177,7 @@ if override_default_curve_buttion:
 
     # Save to CSV
     np.savetxt(
-        "src/config/calibration_curve_data.csv",
+        BASE_DIR / "config" / "calibration_curve_data.csv",
         data,
         delimiter=",",
         header="x,y",
