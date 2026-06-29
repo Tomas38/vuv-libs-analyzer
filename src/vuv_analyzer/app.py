@@ -7,7 +7,7 @@ import streamlit as st
 BASE_DIR = Path(__file__).resolve().parent
 
 # Define the pages
-st.logo(str(BASE_DIR / "CEITEC_Logo_Green.png"), size="large")
+st.logo(str(BASE_DIR / "assets" / "CEITEC_Logo_Green.png"), size="large")
 main_page = st.Page(str(BASE_DIR / "spectrum.py"), title="Spectrum module", icon="🌈")
 page_2 = st.Page(str(BASE_DIR / "mapping.py"), title="Mapping module", icon="🗺️")
 page_3 = st.Page(str(BASE_DIR / "wav_cal.py"), title="Wavelength Calibration", icon="📏")
