@@ -16,7 +16,7 @@ uploaded_file = st.file_uploader("Choose a file with spectra to display")
 if uploaded_file is not None:
     xdata, ydatas = ham_read_file(uploaded_file)
 else:
-    xdata, ydatas = ham_reader(BASE_DIR / "sample-data" / "10us_30meas_05_Al_alloy_30mJ_Ar_1020mbar.csv")
+    xdata, ydatas = ham_reader(BASE_DIR / "sample-data" / "cu_1shot.csv")
 
 if ydatas.size == 0:
     st.info("Upload a Hamamatsu file to display spectra.")
