@@ -21,12 +21,14 @@ def clear_table():
     st.session_state.df = pd.DataFrame(columns=["pixel no.", "wavelength (nm)"])
 
 def linear_func(x, a, b):
-    x0 = np.mean(x)  # fix x0 before fitting
-    return a * (x - x0) + b
+    #x0 = np.mean(x)  # fix x0 before fitting
+    #return a * (x - x0) + b
+    return a * x + b
 
 def quadratic_func(x, a, b, c):
-    x0 = np.mean(x)  # fix x0 before fitting
-    return a * (x - x0)**2 + b * (x - x0) + c
+    #x0 = np.mean(x)  # fix x0 before fitting
+    #return a * (x - x0)**2 + b * (x - x0) + c
+    return a * x**2 + b * x + c
 
 
 st.title("VUV LIBS Wavelength Calibration")
@@ -62,9 +64,8 @@ placeholder = st.empty()
 
 method = st.selectbox("Calibration method",
                   options=["Linear Regression",
-                           "Linear Interpolation (TBD)",
                            "Quadratic Regression",
-                           "Cubic Regression",
+                           "Linear Interpolation (TBD)",
                            "Cubic Splines Interpolation (TBD)",
                            ],
                   index=0)
@@ -80,7 +81,8 @@ if method == "Linear Regression":
     popt, pcov = curve_fit(linear_func, X, Y)
     perr = np.sqrt(np.diag(pcov))
     A_fit, B_fit = popt
-    st.write(f"Fitted parameters: A = {A_fit:.4f} ± {perr[0]:.4f}, B = {B_fit:.4f} ± {perr[1]:.4f}")
+    st.write("$\\lambda(x) = A x + B$")
+    st.write(f"Fitted parameters: A = {A_fit:.12f} ± {perr[0]:.12f}, B = {B_fit:.12f} ± {perr[1]:.12f}")
 
     yfit = linear_func(X, *popt)
 
@@ -89,7 +91,7 @@ if method == "Linear Regression":
 
     r_squared = 1 - ss_res / ss_tot
 
-    st.write(f"R² = {r_squared:.4f}")
+    st.write(f"R² = {r_squared:.10f}")
 
     st.session_state.xdata = np.arange(0, 4096, 1)
     st.session_state.ydata = linear_func(st.session_state.xdata, A_fit, B_fit)
@@ -115,7 +117,8 @@ elif method == "Quadratic Regression":
     popt, pcov = curve_fit(quadratic_func, X, Y)
     perr = np.sqrt(np.diag(pcov))
     A_fit, B_fit, C_fit = popt
-    st.write(f"Fitted parameters: A = {A_fit:.4f} ± {perr[0]:.4f}, B = {B_fit:.4f} ± {perr[1]:.4f}, C = {C_fit:.4f} ± {perr[2]:.4f}")
+    st.write("$\\lambda(x) = A x^2 + B x + C$")
+    st.write(f"Fitted parameters: A = {A_fit:.12f} ± {perr[0]:.12f}, B = {B_fit:.12f} ± {perr[1]:.12f}, C = {C_fit:.12f} ± {perr[2]:.12f}")
 
     yfit = quadratic_func(X, *popt)
 
@@ -124,7 +127,7 @@ elif method == "Quadratic Regression":
 
     r_squared = 1 - ss_res / ss_tot
 
-    st.write(f"R² = {r_squared:.4f}")
+    st.write(f"R² = {r_squared:.10f}")
 
     st.session_state.xdata = np.arange(0, 4096, 1)
     st.session_state.ydata = quadratic_func(st.session_state.xdata, A_fit, B_fit, C_fit)
@@ -136,10 +139,11 @@ else:
 fig = go.Figure()
 fig.add_trace(
     go.Scatter(
-        x=edited_df["pixel no."],
-        y=edited_df["wavelength (nm)"],
+        x=X,
+        y=Y,
         mode="markers",
         name="Calibration Points",
+        zorder=1,
     )
 )
 
@@ -149,6 +153,7 @@ fig.add_trace(
         y=st.session_state.ydata,
         mode="lines",
         name="Calibration Curve",
+        zorder=0,
     )
 )
 
